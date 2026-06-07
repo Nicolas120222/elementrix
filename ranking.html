@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Ranking</title>
+
+<style>
+body{
+    overflow: hidden;
+            margin:0;
+            min-height:100vh;
+            background:
+            linear-gradient(
+                135deg,
+                #ff5a00 0%,
+                #311000 25%,
+                #111111 50%,
+                #001a33 75%,
+                #00b7ff 100%
+            );
+        }
+        h1{
+            position: absolute;
+    top: 20px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    margin: 0;
+
+    color: white;
+    font-size: 50px;
+    font-family: Arial, Helvetica, sans-serif;
+
+    text-shadow:
+        0 0 10px rgba(255,255,255,.4),
+        0 0 20px rgba(255,255,255,.2);
+}
+
+#top3{
+    display:flex;
+    justify-content:center;
+    align-items:flex-end;
+    gap:20px;
+    margin-top:140px;
+}
+
+.top{
+    width:170px;
+    border-radius:20px 20px 0 0;
+    padding:20px;
+    font-weight:bold;
+    box-shadow:0 0 20px rgba(0,0,0,.4);
+}
+
+.silver{
+    background:silver;
+    color:black;
+    height:180px;
+}
+
+.gold{
+    background:gold;
+    color:black;
+    height:250px;
+}
+
+.bronze{
+    background:#cd7f32;
+    color:white;
+    height:140px;
+}
+
+.item{
+    background: rgba(255,255,255,0.1);
+    margin: 10px auto;
+    padding: 15px;
+    width: 300px;
+    border-radius: 10px;
+}
+
+button{
+    position:absolute;
+    top: 20px;
+    left:20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Ranking</h1>
+
+<div id="top3"></div>
+<div id="lista"></div>
+
+<button onclick="voltar()">
+    <img src="X_Elementrix.png" width="75">
+</button>
+
+<script>
+async function carregarRanking(){
+
+    let res = await fetch("http://localhost:3000/ranking");
+    let dados = await res.json();
+
+    let top3 = document.getElementById("top3");
+    let lista = document.getElementById("lista");
+
+    top3.innerHTML = "";
+    lista.innerHTML = "";
+
+    let cores = ["gold","silver","bronze"];
+
+    dados.slice(0,3).forEach((user, i)=>{
+        let div = document.createElement("div");
+        div.classList.add("top", cores[i]);
+
+        div.innerHTML = `
+            <h2>${i+1}º</h2>
+            <p>${user.nome}</p>
+            <p>${user.pontomax} pts</p>
+        `;
+
+        top3.appendChild(div);
+    });
+
+    dados.slice(3,10).forEach((user, i)=>{
+        let div = document.createElement("div");
+        div.classList.add("item");
+
+        div.textContent = `${i+4}º - ${user.nome} (${user.pontomax} pts)`;
+
+        lista.appendChild(div);
+    });
+}
+
+function voltar(){
+    window.location.href = "menu.html";
+}
+
+carregarRanking();
+</script>
+
+</body>
+</html>

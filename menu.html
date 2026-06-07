@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElemenTrix</title>
+    <style>
+        body{
+            overflow: hidden;
+            margin:0;
+            min-height:100vh;
+
+            background:
+            linear-gradient(
+                135deg,
+                #ff5a00 0%,
+                #311000 25%,
+                #111111 50%,
+                #001a33 75%,
+                #00b7ff 100%
+            );
+        }
+        h1{
+            color: rgb(0, 117, 10);
+            font: 75px Arial;
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translate(-50%);
+        }
+        button{
+            position: absolute;
+             font: 40px Arial;
+            padding: 10px 20px;       
+            border-radius: 15px;      
+            border-color:  rgb(0, 0, 0);              
+            background-color: #ffffff; 
+            color: rgb(0, 0, 0);             
+        }
+        #JOGAR{
+            font: 70px Arial;
+            top: 200px;
+            right: 250px;
+            width: 300px;
+            height: 80px;
+
+            font-family: Arial, sans-serif;
+            font-size: 32px;
+            font-weight: bold;
+
+            border: none;
+            border-radius: 20px;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+            background: linear-gradient(
+                135deg,
+                #ff8c00,
+                #ff5a00
+            );
+
+            color: white;
+
+            box-shadow:
+                0 0 15px rgba(255,120,0,.5);
+        }
+
+        #RANKING{
+            font: 70px Arial;
+            top: 350px;
+            right: 250px;
+            width: 300px;
+            height: 80px;
+
+            font-family: Arial, sans-serif;
+            font-size: 32px;
+            font-weight: bold;
+
+            border: none;
+            border-radius: 20px;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+            background: linear-gradient(
+                135deg,
+                #ff8c00,
+                #ff5a00
+            );
+
+            color: white;
+
+            box-shadow:
+            0 0 15px rgba(255,120,0,.5);
+        }
+            #JOGAR:hover{
+            transform: scale(1.05);
+
+            box-shadow:
+            0 0 25px rgba(255,120,0,.8);
+        }
+            #RANKING:hover{
+            transform: scale(1.05);
+            box-shadow:
+            0 0 25px rgba(255,120,0,.8);
+        }
+            #nome{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 20px;
+        }
+            #player{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 20px;
+        }
+            #titulo{
+            position: absolute;
+            top: -30px;
+            left: 350px;
+            filter:
+            drop-shadow(0 0 20px rgba(255,150,0,.8))
+            drop-shadow(0 0 40px rgba(0,150,255,.6));
+
+        }
+    </style>
+</head>
+<body>
+    <div id ="menu">
+        <h1 id="titulo">
+            <img src="Titulo.png" width="630">
+        </h1>
+        <button id="JOGAR" onclick="jogar()">JOGAR</button>
+        <button id="RANKING" onclick="ranking()">RANKING</button>
+    </div>
+    <h2 id="player"></h2>
+
+    <script>
+    let pausado = false;
+    document.addEventListener("visibilitychange", function() {
+        if (document.hidden) {
+            pausado = true;
+            console.log("Jogo pausado");
+        } else {
+            pausado = false;
+            console.log("Jogo voltou");
+        }
+    });
+    let usuario = JSON.parse(localStorage.getItem("usuario"))
+        function atualizartela(){
+            document.querySelector("#player").textContent = `${usuario.nome}`;
+        }
+        atualizartela();
+        window.addEventListener("pageshow", function(){
+            if(usuario){
+                usuario.pontos = 0;
+                localStorage.setItem("usuario", JSON.stringify(usuario));
+            }
+        });
+        function jogar(){
+            if(!usuario){
+                window.location.href = "nome.html";
+            }
+            else{
+                localStorage.removeItem("respondidas");
+                localStorage.removeItem("perguntaAtual");
+                window.location.href = "jogo.html";
+            }
+        }
+        function ranking(){
+            window.location.href = "ranking.html";
+        }
+    </script>
+</body>
+</html>

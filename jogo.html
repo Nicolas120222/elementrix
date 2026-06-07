@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElemenTrix</title>
+
+<style>
+body{
+    overflow: hidden;
+            margin:0;
+            min-height:100vh;
+
+            background:
+            linear-gradient(
+                135deg,
+                #ff5a00 0%,
+                #311000 25%,
+                #111111 50%,
+                #001a33 75%,
+                #00b7ff 100%
+            );
+        }
+
+#pergunta{
+    position: absolute;
+    top: 80px;
+    width: 100%;
+    color: white;
+    text-align: center;
+    font-size: 28px;
+}
+
+#player{
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: white;
+    padding: 10px 15px;
+}
+
+#voltarmenu{
+    position:absolute;
+    top: 20px;
+    left:20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+#explicacao{
+    width: 70%;
+    max-width: 700px;
+    max-width: 700px;
+    margin-top: 10px;
+    font-size: 16px;
+    padding: 15px;
+    color: white;
+    font-size: 18px;
+    display: none;
+    text-align: center;
+}
+
+#respostas{
+    position: absolute;
+    top: 150px;
+    width: 100%;
+    color: rgb(0, 0, 0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.botao{
+    width: 300px;
+    padding: 15px;
+    margin: 10px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #1e88e5;
+    color: white;
+    transition: 0.3s;
+}
+
+.botao:hover{
+    transform: scale(1.05);
+}
+
+.correta{ background: #00c853 !important; }
+.errada{ background: #d50000 !important; }
+
+#proxima{
+    margin-top: 20px;
+    padding: 12px 25px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    background: orange;
+    cursor: pointer;
+    display: none;
+}
+#contadorPergunta{
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    color: white;
+    font-size: 22px;
+    font-family: Arial, sans-serif;
+    padding: 10px 15px;
+}
+</style>
+</head>
+
+<body>
+
+<h2 id="player"></h2>
+<button id="voltarmenu">
+    <img src="X_Elementrix.png" width="75">
+</button>
+<div id="pergunta"></div>
+<div id="contadorPergunta"></div>
+
+<div id="respostas">
+    <button class="botao"></button>
+    <button class="botao"></button>
+    <button class="botao"></button>
+    <button class="botao"></button>
+    <div id="explicacao"></div>
+    <button id="proxima">Próxima</button>
+</div>
+
+<script>
+let usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if(!usuario){
+    window.location.href = "nome.html";
+}
+
+function atualizartela(){
+    document.querySelector("#player").textContent =
+        `${usuario.nome}: ${usuario.pontos} PTS`;
+}
+
+atualizartela();
+
+let timeout = null;
+
+async function salvar(){
+    await fetch("http://localhost:3000/usuario", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(usuario)
+    });
+}
+function salvarDebounce(){
+    clearTimeout(timeout);
+    timeout = setTimeout(salvar, 500);
+}
+
+let perguntas = [
+{
+    tipo:"multipla",
+
+    pergunta: "Qual, dentre os fatores a seguir, prejudica diretamente as mudanças climáticas na América do Sul?",
+    explicacao:"A agropecuária intensiva contribui para as mudanças climáticas porque provoca desmatamento e libera muitos gases do efeito estufa, como o metano produzido pelo gado.",
+    respostas: [
+        {texto: "Agropecuária intensiva", correta: true},
+        {texto: "Falta de saneamento básico", correta: false},
+        {texto: "Utilização de agrotóxicos na agricultura", correta: false},
+        {texto: "Energia nuclear", correta: false}
+    ]
+},
+{
+    tipo:"multipla",
+
+    pergunta: "Quais são os principais impactos do desmatamento da Amazônia para o Brasil?",
+    explicacao:"Agrava as secas no Brasil ao interromper a evapotranspiração, processo em que as árvores liberam bilhões de toneladas de água na atmosfera.",
+    respostas: [
+        {texto: "Aumento na produção de O²", correta: false},
+        {texto: "Secas", correta: true},
+        {texto: "Enchentes", correta: false},
+        {texto: "Diminuição do número de gado", correta: false}
+    ]
+},
+{
+    tipo: "vf",
+
+    pergunta: "Assinale Verdadeiro ou Falso:",
+
+    afirmacoes: [
+        {
+            texto: "O desmatamento contribui para as mudanças climáticas.",
+            correta: true
+        },
+        {
+            texto: "A energia solar emite grandes quantidades de CO₂.",
+            correta: false
+        },
+        {
+            texto: "A Amazônia influencia o regime de chuvas do Brasil.",
+            correta: true
+        }
+    ],
+
+    explicacao: "O desmatamento aumenta emissões, a energia solar tem baixa emissão e a Amazônia ajuda a regular chuvas."
+}
+];
+
+let atual = 
+Number(localStorage.getItem("perguntaAtual")) || 0;
+
+let respondidas =
+JSON.parse(localStorage.getItem("respondidas")) || [];
+
+let perguntaEl = document.getElementById("pergunta");
+let botoes = document.querySelectorAll(".botao");
+let proximaBtn = document.getElementById("proxima");
+let explicacaoVar = document.getElementById("explicacao");
+let contador;
+
+function carregarPergunta(){
+    botoes = document.querySelectorAll(".botao");
+    proximaBtn = document.getElementById("proxima");
+    explicacaoVar = document.getElementById("explicacao");
+    let p = perguntas[atual];
+
+    if(p.tipo === "multipla"){
+
+    document.getElementById("respostas").innerHTML = `
+        <button class="botao"></button>
+        <button class="botao"></button>
+        <button class="botao"></button>
+        <button class="botao"></button>
+        <div id="explicacao"></div>
+        <button id="proxima">Próxima</button>
+    `;
+
+    botoes = document.querySelectorAll(".botao");
+    explicacaoVar = document.getElementById("explicacao");
+    proximaBtn = document.getElementById("proxima");
+
+    proximaBtn.onclick = avancarPergunta;
+}
+    perguntaEl.textContent = p.pergunta;
+
+    document.getElementById("contadorPergunta").textContent =
+    `Pergunta ${atual + 1} de ${perguntas.length}`;
+
+ if(p.tipo === "vf"){
+
+        let respostasDiv =
+            document.getElementById("respostas");
+
+        respostasDiv.innerHTML = "";
+        respostasDiv.innerHTML = `
+    <div id="explicacao"></div>
+    <button id="proxima">Próxima</button>
+`;
+
+explicacaoVar = document.getElementById("explicacao");
+proximaBtn = document.getElementById("proxima");
+
+proximaBtn.style.display = "none";
+proximaBtn.onclick = avancarPergunta;
+
+        p.afirmacoes.forEach((afirmacao, indice) => {
+
+            let bloco = document.createElement("div");
+
+            bloco.style.color = "white";
+            bloco.style.margin = "8px";
+            bloco.style.textAlign = "left";
+            bloco.style.width = "550px";
+
+            bloco.innerHTML = `
+                <p style="
+                    margin:4px 0;
+                    font-size:18px;
+                ">
+                    ${afirmacao.texto}
+                </p>
+
+                <label>
+                    <input
+                        type="radio"
+                        name="vf${indice}"
+                        value="true"
+                    >
+                    Verdadeiro
+                </label>
+
+                <label style="margin-left:20px;">
+                    <input
+                        type="radio"
+                        name="vf${indice}"
+                        value="false"
+                    >
+                    Falso
+                </label>
+            `;
+
+            respostasDiv.appendChild(bloco);
+        });
+
+        let confirmar =
+            document.createElement("button");
+
+        confirmar.id = "confirmarVF";
+        confirmar.className = "botao";
+        confirmar.style.marginTop = "5px";
+        confirmar.style.padding = "10px";
+        confirmar.textContent = "Confirmar";
+
+        respostasDiv.appendChild(confirmar);
+
+        respostasDiv.appendChild(explicacaoVar);
+        respostasDiv.appendChild(proximaBtn);
+
+confirmar.onclick = () => {
+    let pontosGanhos = 0;
+    p.afirmacoes.forEach((afirmacao, indice) => {
+    let marcado = document.querySelector(
+        `input[name="vf${indice}"]:checked`
+    );
+
+    let bloco =
+        document.querySelectorAll("#respostas div")[indice];
+
+    if(!marcado){
+        bloco.style.background = "#d50000";
+        bloco.style.padding = "10px";
+        bloco.style.borderRadius = "10px";
+        return;
+    }
+
+    let respostaUsuario =
+        marcado.value === "true";
+
+    if(respostaUsuario === afirmacao.correta){
+        pontosGanhos++;
+        bloco.style.background = "#00c853";
+
+    }else{
+        bloco.style.background = "#d50000";
+    }
+    bloco.style.padding = "10px";
+    bloco.style.borderRadius = "10px";
+});
+
+    if(!respondidas[atual]){
+
+        usuario.pontos += pontosGanhos;
+
+        respondidas[atual] = true;
+
+        localStorage.setItem(
+            "respondidas",
+            JSON.stringify(respondidas)
+        );
+
+        localStorage.setItem(
+            "usuario",
+            JSON.stringify(usuario)
+        );
+
+        atualizartela();
+        salvarDebounce();
+    }
+
+    explicacaoVar.textContent =
+    p.explicacao;
+
+    explicacaoVar.style.display = "block";
+
+    let tempo = 5;
+
+    proximaBtn.style.display = "block";
+    proximaBtn.disabled = true;
+    proximaBtn.textContent = `Próxima (${tempo})`;
+
+    contador = setInterval(() => {
+
+        tempo--;
+
+        if(tempo > 0){
+
+            proximaBtn.textContent =
+                `Próxima (${tempo})`;
+
+        }else{
+
+            clearInterval(contador);
+
+            proximaBtn.disabled = false;
+            proximaBtn.textContent = "Próxima";
+        }
+
+    }, 1000);
+};
+        return;
+    }
+    let respostasEmbaralhadas =
+        [...p.respostas];
+    for(
+        let i =
+        respostasEmbaralhadas.length - 1;
+        i > 0;
+        i--
+    ){
+        let j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
+        [
+            respostasEmbaralhadas[i],
+            respostasEmbaralhadas[j]
+        ] =
+        [
+            respostasEmbaralhadas[j],
+            respostasEmbaralhadas[i]
+        ];
+    }
+    botoes.forEach((botao, i) => {
+
+        botao.style.display = "block";
+
+        botao.disabled = false;
+
+        botao.classList.remove(
+            "correta",
+            "errada"
+        );
+
+        botao.textContent =
+            respostasEmbaralhadas[i].texto;
+
+        botao.dataset.correta =
+            respostasEmbaralhadas[i].correta;
+    });
+    botoes.forEach(botao => {
+    botao.onclick = cliqueAlternativa;
+});
+
+    explicacaoVar.style.display = "none";
+    explicacaoVar.textContent = "";
+    proximaBtn.style.display = "none";
+    proximaBtn.disabled = true;
+    clearInterval(contador);
+}
+function avancarPergunta() {
+    atual++;
+    localStorage.setItem("perguntaAtual", atual);
+
+    if(atual >= perguntas.length){
+        localStorage.removeItem("perguntaAtual");
+        localStorage.removeItem("respondidas");
+        alert("Fim do quiz!");
+        window.location.href = "menu.html";
+        return;
+    }
+
+    carregarPergunta();
+}
+    function cliqueAlternativa(){
+
+    let botao = this;
+    console.log("correta?", botao.dataset.correta);
+
+    botoes.forEach(b => b.disabled = true);
+
+    if(botao.dataset.correta === "true"){
+        if(!respondidas[atual]){
+
+            usuario.pontos++;
+            atualizartela();
+
+            respondidas[atual] = true;
+
+            localStorage.setItem(
+                "respondidas",
+                JSON.stringify(respondidas)
+            );
+
+            localStorage.setItem(
+                "usuario",
+                JSON.stringify(usuario)
+            );
+
+            atualizartela();
+            salvarDebounce();
+        }
+
+        botao.classList.add("correta");
+
+    }else{
+
+        botao.classList.add("errada");
+
+        botoes.forEach(b => {
+
+            if(b.dataset.correta === "true"){
+                b.classList.add("correta");
+            }
+
+        });
+    }
+
+    explicacaoVar.textContent =
+        perguntas[atual].explicacao;
+
+    explicacaoVar.style.display = "block";
+
+    let tempo = 5;
+
+    proximaBtn.style.display = "block";
+    proximaBtn.disabled = true;
+    proximaBtn.textContent = `Próxima (${tempo})`;
+    
+    contador = setInterval(() => {
+        tempo--;
+        if(tempo > 0){
+
+            proximaBtn.textContent =
+                `Próxima (${tempo})`;
+        }else{
+            clearInterval(contador);
+            proximaBtn.disabled = false;
+            proximaBtn.textContent = "Próxima";
+        }
+    },1000);
+}
+
+
+botoes.forEach(botao => {
+    botao.onclick = cliqueAlternativa;
+});
+
+
+document.getElementById("voltarmenu").onclick = async() => {
+    localStorage.removeItem("perguntaAtual");
+    clearTimeout(timeout);
+    usuario.pontos = 0;
+    localStorage.setItem("usuario", JSON.stringify(usuario));
+        const resposta = await fetch("http://localhost:3000/usuario", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(usuario)
+        });
+            console.log(await resposta.text());
+            window.location.href = "menu.html";
+};
+
+carregarPergunta();
+</script>
+
+</body>
+</html>
