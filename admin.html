@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Admin</title>
+
+<style>
+body{
+    background:#111;
+    color:white;
+    font-family:Arial;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    flex-direction:column;
+}
+
+button{
+    padding:15px 30px;
+    font-size:20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Painel Admin</h1>
+
+<input type="password" id="senha" placeholder="Senha">
+
+<br><br>
+
+<button onclick="resetar()">
+RESETAR RANKING
+</button>
+
+<script>
+
+async function resetar(){
+
+    let senha =
+        document.getElementById("senha").value;
+
+    let res = await fetch(
+        "https://elementrix-api.onrender.com/reset",
+        {
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body: JSON.stringify({
+                senha: senha
+            })
+        }
+    );
+
+    let dados = await res.json();
+
+    if(dados.ok){
+
+        alert("Ranking resetado!");
+
+    }else{
+
+        alert("Senha errada!");
+    }
+}
+
+</script>
+
+</body>
+</html>

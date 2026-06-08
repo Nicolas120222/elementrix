@@ -52,6 +52,23 @@ app.get("/ranking", (req, res) => {
 
     res.json(usuarios.slice(0, 10));
 });
+app.post("/reset", (req, res) => {
+
+    const { senha } = req.body;
+
+    if (senha !== "admin_67") {
+        return res.status(403).json({
+            error: "sem permissão"
+        });
+    }
+
+    fs.writeFileSync(FILE, JSON.stringify([]));
+
+    res.json({
+        ok: true,
+        message: "ranking resetado"
+    });
+});
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
