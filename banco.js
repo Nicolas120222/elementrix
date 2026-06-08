@@ -1,60 +1,59 @@
 import express from "express";
-import Database from "better-sqlite3";
 import cors from "cors";
+import fs from "fs";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const db = new Database("usuario.db");
+const FILE = "./data.json";
 
-db.prepare(`
-CREATE TABLE IF NOT EXISTS usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT UNIQUE,
-    pontos INTEGER,
-    pontomax INTEGER DEFAULT 0
-)
-`).run();
+if (!fs.existsSync(FILE)) {
+    fs.writeFileSync(FILE, JSON.stringify([]));
+}
+
+function ler() {
+    return JSON.parse(fs.readFileSync(FILE));
+}
+
+function salvar(data) {
+    fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
+}
+
 
 app.post("/usuario", (req, res) => {
     let { nome, pontos } = req.body;
     nome = nome.trim().toLowerCase();
 
-    const existente = db.prepare(
-        "SELECT * FROM usuarios WHERE nome = ?"
-    ).get(nome);
+    let usuarios = ler();
 
-    if (existente) {
-        const novoMax = Math.max(pontos, existente.pontomax);
+    let u = usuarios.find(x => x.nome === nome);
 
-        db.prepare(`
-            UPDATE usuarios
-            SET pontos = ?, pontomax = ?
-            WHERE nome = ?
-        `).run(pontos, novoMax, nome);
-
+    if (u) {
+        u.pontos = pontos;
+        u.pontomax = Math.max(u.pontomax || 0, pontos);
     } else {
-        db.prepare(`
-            INSERT INTO usuarios (nome, pontos, pontomax)
-            VALUES (?, ?, ?)
-        `).run(nome, pontos, pontos);
+        usuarios.push({
+            nome,
+            pontos,
+            pontomax: pontos
+        });
     }
+
+    salvar(usuarios);
 
     res.json({ ok: true });
 });
 
 app.get("/ranking", (req, res) => {
-    const usuarios = db.prepare(`
-        SELECT nome, pontomax
-        FROM usuarios
-        ORDER BY pontomax DESC
-        LIMIT 10
-    `).all();
+    let usuarios = ler();
 
-    res.json(usuarios);
+    usuarios.sort((a, b) => b.pontomax - a.pontomax);
+
+    res.json(usuarios.slice(0, 10));
 });
+const PORT = process.env.PORT || 3000;
 
-app.listen(3000, () => {
-    console.log("Servidor rodando");
+app.listen(PORT, () => {
+    console.log("Servidor rodando na porta " + PORT);
 });
