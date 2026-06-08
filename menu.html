@@ -133,7 +133,7 @@
 <body>
     <div id ="menu">
         <h1 id="titulo">
-            <img src="Titulo.png" width="630">
+            <img src="" width="630">
         </h1>
         <button id="JOGAR" onclick="jogar()">JOGAR</button>
         <button id="RANKING" onclick="ranking()">RANKING</button>
@@ -141,6 +141,7 @@
     <h2 id="player"></h2>
 
     <script>
+    const API = "https://elementrix-api.onrender.com";
     let pausado = false;
     document.addEventListener("visibilitychange", function() {
         if (document.hidden) {
@@ -151,15 +152,22 @@
             console.log("Jogo voltou");
         }
     });
-    let usuario = JSON.parse(localStorage.getItem("usuario"))
-        function atualizartela(){
-            document.querySelector("#player").textContent = `${usuario.nome}`;
-        }
-        atualizartela();
+let usuario = JSON.parse(localStorage.getItem("usuario"));
+
+function atualizartela(){
+    if(!usuario){
+        document.querySelector("#player").textContent = "Nenhum usuário";
+        return;
+    }
+
+    document.querySelector("#player").textContent =
+        `${usuario.nome}`;
+}
+
+atualizartela();
         window.addEventListener("pageshow", function(){
             if(usuario){
-                usuario.pontos = 0;
-                localStorage.setItem("usuario", JSON.stringify(usuario));
+                atualizartela();
             }
         });
         function jogar(){

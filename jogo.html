@@ -132,6 +132,8 @@ body{
 </div>
 
 <script>
+const API = "https://elementrix-api.onrender.com";
+console.log("JS do jogo carregou");
 let usuario = JSON.parse(localStorage.getItem("usuario"));
 
 if(!usuario){
@@ -148,7 +150,7 @@ atualizartela();
 let timeout = null;
 
 async function salvar(){
-    await fetch("http://localhost:3000/usuario", {
+    await fetch(`${API}/usuario`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(usuario)
@@ -325,8 +327,10 @@ confirmar.onclick = () => {
         `input[name="vf${indice}"]:checked`
     );
 
-    let bloco =
-        document.querySelectorAll("#respostas div")[indice];
+    let blocos = Array.from(respostasDiv.querySelectorAll("div"))
+    .filter(b => b.querySelector("input"));
+    
+    let bloco = blocos[indice];
 
     if(!marcado){
         bloco.style.background = "#d50000";
@@ -537,22 +541,38 @@ botoes.forEach(botao => {
     botao.onclick = cliqueAlternativa;
 });
 
+function ativarBotaoX() {
+    const btn = document.getElementById("voltarmenu");
 
-document.getElementById("voltarmenu").onclick = async() => {
-    localStorage.removeItem("perguntaAtual");
-    clearTimeout(timeout);
-    usuario.pontos = 0;
-    localStorage.setItem("usuario", JSON.stringify(usuario));
-        const resposta = await fetch("http://localhost:3000/usuario", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(usuario)
-        });
-            console.log(await resposta.text());
-            window.location.href = "menu.html";
-};
+    console.log("tentando ativar botão X:", btn);
+
+    if (!btn) {
+        setTimeout(ativarBotaoX, 200);
+        return;
+    }
+
+    btn.onclick = () => {
+
+        localStorage.removeItem("perguntaAtual");
+
+        if (usuario) {
+            usuario.pontos = 0;
+            localStorage.setItem("usuario", JSON.stringify(usuario));
+
+            fetch(`${API}/usuario`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(usuario)
+            }).catch(err => {
+                console.log("erro no fetch ignorado:", err);
+            });
+        }
+
+        window.location.href = "menu.html";
+    };
+}
+
+ativarBotaoX();
 
 carregarPergunta();
 </script>

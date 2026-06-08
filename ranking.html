@@ -102,9 +102,10 @@ button{
 </button>
 
 <script>
+const API = "https://elementrix-api.onrender.com";
 async function carregarRanking(){
 
-    let res = await fetch("http://localhost:3000/ranking");
+    let res = await fetch(`${API}/ranking`);
     let dados = await res.json();
 
     let top3 = document.getElementById("top3");

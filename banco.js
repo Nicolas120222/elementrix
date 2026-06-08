@@ -1,20 +1,22 @@
-import express from 'express';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import cors from 'cors';
+import express from "express";
+import sqlite3 from "sqlite3";
+import { open } from "sqlite";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-async function getDB(){
+const PORT = process.env.PORT || 3000;
+
+async function getDB() {
     return open({
-        filename: './usuario.db',
+        filename: "./usuario.db",
         driver: sqlite3.Database
     });
 }
 
-async function initDB(){
+async function initDB() {
     const db = await getDB();
 
     await db.run(`
@@ -26,19 +28,11 @@ async function initDB(){
         )
     `);
 
-    // tenta adicionar coluna se não existir (evita erro)
-    try{
-        await db.run(`ALTER TABLE usuarios ADD COLUMN pontomax INTEGER DEFAULT 0`);
-    } catch(e){}
-
     console.log("Banco pronto");
 }
 initDB();
 
-
-// 🔥 SALVAR / ATUALIZAR USUÁRIO
-app.post('/usuario', async (req, res) => {
-
+app.post("/usuario", async (req, res) => {
     let { nome, pontos } = req.body;
 
     nome = nome.trim().toLowerCase();
@@ -46,32 +40,28 @@ app.post('/usuario', async (req, res) => {
     const db = await getDB();
 
     let existente = await db.get(
-        `SELECT * FROM usuarios WHERE nome = ?`,
+        "SELECT * FROM usuarios WHERE nome = ?",
         [nome]
     );
 
-    if(existente){
+    if (existente) {
         let novoMax = Math.max(pontos, existente.pontomax);
 
-        await db.run(`
-            UPDATE usuarios
-            SET pontos = ?, pontomax = ?
-            WHERE nome = ?
-        `, [pontos, novoMax, nome]);
-
+        await db.run(
+            `UPDATE usuarios SET pontos = ?, pontomax = ? WHERE nome = ?`,
+            [pontos, novoMax, nome]
+        );
     } else {
-        await db.run(`
-            INSERT INTO usuarios (nome, pontos, pontomax)
-            VALUES (?, ?, ?)
-        `, [nome, pontos, pontos]);
+        await db.run(
+            `INSERT INTO usuarios (nome, pontos, pontomax) VALUES (?, ?, ?)`,
+            [nome, pontos, pontos]
+        );
     }
 
     res.json({ ok: true });
 });
 
-
-app.get('/ranking', async (req, res) => {
-
+app.get("/ranking", async (req, res) => {
     const db = await getDB();
 
     const usuarios = await db.all(`
@@ -84,7 +74,6 @@ app.get('/ranking', async (req, res) => {
     res.json(usuarios);
 });
 
-
-app.listen(3000, () => {
-    console.log("Servidor rodando em http://localhost:3000");
+app.listen(PORT, () => {
+    console.log("Servidor rodando na porta " + PORT);
 });
