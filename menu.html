@@ -142,6 +142,24 @@
 
     <script>
     const API = "https://elementrix-api.onrender.com";
+    setInterval(async () => {
+
+    let usuario =
+        JSON.parse(localStorage.getItem("usuario"));
+
+    if(!usuario) return;
+
+    await fetch(`${API}/online`, {
+        method: "POST",
+        headers: {
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+            nome: usuario.nome
+        })
+    });
+
+}, 10000);
     let pausado = false;
     document.addEventListener("visibilitychange", function() {
         if (document.hidden) {
@@ -183,19 +201,6 @@ atualizartela();
         function ranking(){
             window.location.href = "ranking.html";
         }
-        setInterval(async () => {
-
-    await fetch(`${API}/online`, {
-        method: "POST",
-        headers: {
-            "Content-Type":"application/json"
-        },
-        body: JSON.stringify({
-            nome: usuario.nome
-        })
-    });
-
-}, 10000);
     </script>
 </body>
 </html>
