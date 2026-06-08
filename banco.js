@@ -19,6 +19,7 @@ function ler() {
 function salvar(data) {
     fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
 }
+let online = {};
 
 
 app.post("/usuario", (req, res) => {
@@ -67,6 +68,41 @@ app.post("/reset", (req, res) => {
     res.json({
         ok: true,
         message: "ranking resetado"
+    });
+});
+app.post("/online", (req, res) => {
+
+    const { nome } = req.body;
+
+    if(nome){
+        online[nome] = Date.now();
+    }
+
+    res.json({ ok: true });
+});
+
+app.post("/online-admin", (req, res) => {
+
+    const { senha } = req.body;
+
+    if(senha !== "admin_67"){
+        return res.status(403).json({
+            error: "sem permissão"
+        });
+    }
+
+    const agora = Date.now();
+
+    for(let nome in online){
+
+        if(agora - online[nome] > 30000){
+            delete online[nome];
+        }
+    }
+
+    res.json({
+        online: Object.keys(online).length,
+        usuarios: Object.keys(online)
     });
 });
 const PORT = process.env.PORT || 3000;

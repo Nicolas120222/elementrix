@@ -22,6 +22,17 @@ button{
     border:none;
     border-radius:10px;
     cursor:pointer;
+    margin:10px;
+}
+
+#resultado{
+    margin-top:20px;
+    white-space:pre-wrap;
+    text-align:left;
+    background:#222;
+    padding:15px;
+    border-radius:10px;
+    width:400px;
 }
 </style>
 </head>
@@ -32,13 +43,21 @@ button{
 
 <input type="password" id="senha" placeholder="Senha">
 
-<br><br>
+<br>
 
 <button onclick="resetar()">
 RESETAR RANKING
 </button>
 
+<button onclick="verOnline()">
+VER ONLINE
+</button>
+
+<div id="resultado"></div>
+
 <script>
+
+const API = "https://elementrix-api.onrender.com";
 
 async function resetar(){
 
@@ -46,7 +65,7 @@ async function resetar(){
         document.getElementById("senha").value;
 
     let res = await fetch(
-        "https://elementrix-api.onrender.com/reset",
+        `${API}/reset`,
         {
             method:"POST",
 
@@ -70,6 +89,42 @@ async function resetar(){
 
         alert("Senha errada!");
     }
+}
+
+async function verOnline(){
+
+    let senha =
+        document.getElementById("senha").value;
+
+    let res = await fetch(
+        `${API}/online-admin`,
+        {
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body: JSON.stringify({
+                senha: senha
+            })
+        }
+    );
+
+    let dados = await res.json();
+
+    if(dados.error){
+
+        alert("Senha errada!");
+        return;
+    }
+
+    document.getElementById("resultado")
+    .textContent =
+`Online: ${dados.online}
+
+Usuários:
+${dados.usuarios.join("\n")}`;
 }
 
 </script>
