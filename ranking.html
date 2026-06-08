@@ -200,36 +200,67 @@ async function carregarRanking(){
     top3.innerHTML = "";
     lista.innerHTML = "";
 
-    let cores = ["gold","silver","bronze"];
+    // ===== TOP 3 =====
 
-    dados.slice(3,10).forEach((user, i)=>{
+    const ordemTop3 = [
+        dados[1], // 2º
+        dados[0], // 1º
+        dados[2]  // 3º
+    ];
 
-    let div = document.createElement("div");
+    const classes = [
+        "silver",
+        "gold",
+        "bronze"
+    ];
 
-    div.classList.add("item");
+    const medalhas = [
+        "🥈",
+        "🥇",
+        "🥉"
+    ];
 
-    div.innerHTML = `
-        <span class="posicao">
-            #${i + 4}
-        </span>
+    ordemTop3.forEach((user, i) => {
 
-        <span>
-            ${user.nome}
-        </span>
+        if(!user) return;
 
-        <span class="pontos">
-            ${user.pontomax} pts
-        </span>
-    `;
-
-    lista.appendChild(div);
-});
-
-    dados.slice(3,10).forEach((user, i)=>{
         let div = document.createElement("div");
+
+        div.classList.add("top");
+        div.classList.add(classes[i]);
+
+        div.innerHTML = `
+            <h2>${medalhas[i]}</h2>
+
+            <p>${user.nome}</p>
+
+            <p>${user.pontomax} pts</p>
+        `;
+
+        top3.appendChild(div);
+    });
+
+    // ===== 4º AO 10º =====
+
+    dados.slice(3, 10).forEach((user, i) => {
+
+        let div = document.createElement("div");
+
         div.classList.add("item");
 
-        div.textContent = `${i+4}º - ${user.nome} (${user.pontomax} pts)`;
+        div.innerHTML = `
+            <span class="posicao">
+                #${i + 4}
+            </span>
+
+            <span>
+                ${user.nome}
+            </span>
+
+            <span class="pontos">
+                ${user.pontomax} pts
+            </span>
+        `;
 
         lista.appendChild(div);
     });
