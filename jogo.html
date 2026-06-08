@@ -476,12 +476,18 @@ function avancarPergunta() {
     localStorage.setItem("perguntaAtual", atual);
 
     if(atual >= perguntas.length){
-        localStorage.removeItem("perguntaAtual");
-        localStorage.removeItem("respondidas");
-        alert("Fim do quiz!");
-        window.location.href = "menu.html";
-        return;
-    }
+    localStorage.removeItem("perguntaAtual");
+    localStorage.removeItem("respondidas");
+    usuario.pontos = 0;
+    localStorage.setItem(
+        "usuario",
+        JSON.stringify(usuario)
+    );
+    salvarDebounce();
+    alert("Fim do quiz!");
+    window.location.href = "menu.html";
+    return;
+}
 
     carregarPergunta();
 }
