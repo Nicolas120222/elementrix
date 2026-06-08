@@ -1,81 +1,60 @@
 import express from "express";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
+import Database from "better-sqlite3";
 import cors from "cors";
-
-app.get("/", (req, res) => {
-    res.send("API OK - ElemenTrix rodando");
-});
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const PORT = process.env.PORT || 3000;
+const db = new Database("usuario.db");
 
-const dbPromise = open({
-    filename: './usuario.db',
-    driver: sqlite3.Database
-});
+db.prepare(`
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT UNIQUE,
+    pontos INTEGER,
+    pontomax INTEGER DEFAULT 0
+)
+`).run();
 
-async function initDB() {
-    const db = await getDB();
-
-    await db.run(`
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT UNIQUE,
-            pontos INTEGER,
-            pontomax INTEGER DEFAULT 0
-        )
-    `);
-
-    console.log("Banco pronto");
-}
-initDB();
-
-app.post("/usuario", async (req, res) => {
+app.post("/usuario", (req, res) => {
     let { nome, pontos } = req.body;
-
     nome = nome.trim().toLowerCase();
 
-    const db = await dbPromise;
-
-    let existente = await db.get(
-        "SELECT * FROM usuarios WHERE nome = ?",
-        [nome]
-    );
+    const existente = db.prepare(
+        "SELECT * FROM usuarios WHERE nome = ?"
+    ).get(nome);
 
     if (existente) {
-        let novoMax = Math.max(pontos, existente.pontomax);
+        const novoMax = Math.max(pontos, existente.pontomax);
 
-        await db.run(
-            `UPDATE usuarios SET pontos = ?, pontomax = ? WHERE nome = ?`,
-            [pontos, novoMax, nome]
-        );
+        db.prepare(`
+            UPDATE usuarios
+            SET pontos = ?, pontomax = ?
+            WHERE nome = ?
+        `).run(pontos, novoMax, nome);
+
     } else {
-        await db.run(
-            `INSERT INTO usuarios (nome, pontos, pontomax) VALUES (?, ?, ?)`,
-            [nome, pontos, pontos]
-        );
+        db.prepare(`
+            INSERT INTO usuarios (nome, pontos, pontomax)
+            VALUES (?, ?, ?)
+        `).run(nome, pontos, pontos);
     }
 
     res.json({ ok: true });
 });
 
-app.get("/ranking", async (req, res) => {
-    const db = await getDB();
-
-    const usuarios = await db.all(`
+app.get("/ranking", (req, res) => {
+    const usuarios = db.prepare(`
         SELECT nome, pontomax
         FROM usuarios
         ORDER BY pontomax DESC
         LIMIT 10
-    `);
+    `).all();
 
     res.json(usuarios);
 });
 
-app.listen(PORT, () => {
-    console.log("Servidor rodando na porta " + PORT);
+app.listen(3000, () => {
+    console.log("Servidor rodando");
 });
