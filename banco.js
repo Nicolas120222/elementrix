@@ -95,7 +95,7 @@ app.post("/online-admin", (req, res) => {
 
     for(let nome in online){
 
-        if(agora - online[nome] > 60000){
+        if(agora - online[nome] > 300000){
             delete online[nome];
         }
     }
