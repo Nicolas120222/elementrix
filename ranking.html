@@ -5,13 +5,15 @@
 <title>Ranking</title>
 
 <style>
+*{
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
 
 body{
-    overflow:hidden;
     margin:0;
     min-height:100vh;
-
-    font-family:Arial, Helvetica, sans-serif;
+    overflow-x:hidden;
 
     background:
     linear-gradient(
@@ -28,44 +30,37 @@ body{
 
 h1{
     text-align:center;
-    margin-top:25px;
-
-    font-size:60px;
+    margin-top:30px;
+    font-size:55px;
 
     text-shadow:
-        0 0 15px rgba(255,255,255,.4),
-        0 0 30px rgba(255,255,255,.2);
+    0 0 10px rgba(255,255,255,.3),
+    0 0 20px rgba(0,183,255,.4);
 }
 
 #top3{
     display:flex;
-
     justify-content:center;
     align-items:flex-end;
+    gap:25px;
 
-    gap:30px;
-
-    margin-top:70px;
+    margin-top:40px;
+    flex-wrap:wrap;
 }
 
 .top{
-
-    width:200px;
-
+    width:220px;
     border-radius:25px 25px 0 0;
-
     padding:20px;
 
     text-align:center;
 
-    backdrop-filter: blur(10px);
-
-    border:2px solid rgba(255,255,255,.2);
-
-    transition:.3s;
+    backdrop-filter: blur(8px);
 
     box-shadow:
-        0 0 30px rgba(0,0,0,.5);
+    0 0 20px rgba(0,0,0,.5);
+
+    transition:.25s;
 }
 
 .top:hover{
@@ -83,35 +78,29 @@ h1{
 }
 
 .gold{
-    height:320px;
+    height:300px;
 
     background:
     linear-gradient(
-        180deg,
-        #ffd700,
-        #ff9800
+        to top,
+        #ffb300,
+        #ffe082
     );
 
-    color:#111;
-
-    box-shadow:
-        0 0 40px rgba(255,215,0,.6);
+    color:black;
 }
 
 .silver{
-    height:250px;
+    height:240px;
 
     background:
     linear-gradient(
-        180deg,
-        #eeeeee,
-        #9e9e9e
+        to top,
+        #9e9e9e,
+        #eeeeee
     );
 
-    color:#111;
-
-    box-shadow:
-        0 0 35px rgba(255,255,255,.4);
+    color:black;
 }
 
 .bronze{
@@ -119,66 +108,63 @@ h1{
 
     background:
     linear-gradient(
-        180deg,
-        #cd7f32,
-        #8d4e16
+        to top,
+        #8d4f22,
+        #cd7f32
     );
-
-    color:white;
-
-    box-shadow:
-        0 0 30px rgba(205,127,50,.5);
 }
 
 #lista{
-
-    width:450px;
+    width:90%;
+    max-width:800px;
 
     margin:50px auto;
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:15px;
 }
 
 .item{
-
     background:rgba(255,255,255,.08);
 
     border:1px solid rgba(255,255,255,.12);
 
-    padding:18px;
+    margin:12px 0;
 
-    border-radius:16px;
+    padding:18px 22px;
 
-    font-size:22px;
+    border-radius:18px;
 
-    backdrop-filter: blur(10px);
+    font-size:24px;
 
-    transition:.25s;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 
-    box-shadow:
-        0 0 15px rgba(0,0,0,.3);
+    backdrop-filter:blur(5px);
+
+    transition:.2s;
 }
 
 .item:hover{
-    transform:scale(1.03);
+    transform:scale(1.02);
 
-    background:rgba(255,255,255,.14);
+    background:rgba(255,255,255,.13);
+}
+
+.posicao{
+    font-weight:bold;
+    color:#00b7ff;
+}
+
+.pontos{
+    color:#ffd54f;
 }
 
 button{
     position:absolute;
-
     top:20px;
     left:20px;
 
     background:none;
-
     border:none;
-
     cursor:pointer;
 
     transition:.2s;
@@ -187,12 +173,6 @@ button{
 button:hover{
     transform:scale(1.1);
 }
-
-button img{
-    filter:
-        drop-shadow(0 0 10px rgba(255,255,255,.4));
-}
-
 </style>
 </head>
 
@@ -222,18 +202,28 @@ async function carregarRanking(){
 
     let cores = ["gold","silver","bronze"];
 
-    dados.slice(0,3).forEach((user, i)=>{
-        let div = document.createElement("div");
-        div.classList.add("top", cores[i]);
+    dados.slice(3,10).forEach((user, i)=>{
 
-        div.innerHTML = `
-            <h2>${i+1}º</h2>
-            <p>${user.nome}</p>
-            <p>${user.pontomax} pts</p>
-        `;
+    let div = document.createElement("div");
 
-        top3.appendChild(div);
-    });
+    div.classList.add("item");
+
+    div.innerHTML = `
+        <span class="posicao">
+            #${i + 4}
+        </span>
+
+        <span>
+            ${user.nome}
+        </span>
+
+        <span class="pontos">
+            ${user.pontomax} pts
+        </span>
+    `;
+
+    lista.appendChild(div);
+});
 
     dados.slice(3,10).forEach((user, i)=>{
         let div = document.createElement("div");
