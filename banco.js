@@ -3,18 +3,20 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import cors from "cors";
 
+app.get("/", (req, res) => {
+    res.send("API OK - ElemenTrix rodando");
+});
+
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 
-async function getDB() {
-    return open({
-        filename: "./usuario.db",
-        driver: sqlite3.Database
-    });
-}
+const dbPromise = open({
+    filename: './usuario.db',
+    driver: sqlite3.Database
+});
 
 async function initDB() {
     const db = await getDB();
@@ -37,7 +39,7 @@ app.post("/usuario", async (req, res) => {
 
     nome = nome.trim().toLowerCase();
 
-    const db = await getDB();
+    const db = await dbPromise;
 
     let existente = await db.get(
         "SELECT * FROM usuarios WHERE nome = ?",
